@@ -3,4 +3,6 @@
     <string name="edit_message">enter a message</string>
     <string name="button_send">send</string>
     <string name="browse">browse</string>
+    <string name="asdf_text">asdf</string>
+    <string name="history">history</string>
 </resources>
