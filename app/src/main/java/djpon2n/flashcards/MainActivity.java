@@ -5,9 +5,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,17 +17,26 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity {
     private static final int READ_REQUEST_CODE = 42;
     private SharedPreferences sharedPrefs;
+    private String TAG = "debug";
 
-    public static final String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        sharedPrefs = this.getPreferences(Context.MODE_PRIVATE);
-        //TODO populate history here?
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        sharedPrefs = this.getPreferences(Context.MODE_PRIVATE);
+
+        Set<String> stringSet = sharedPrefs.getStringSet(getString(R.string.history), new HashSet<String>());
+        String[] stringArray = stringSet.toArray(new String[stringSet.size()]);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, stringArray);
+        ListView historyList = findViewById(R.id.historyList);
+        historyList.setAdapter(adapter);
     }
 
-    public void sendMessage(View view) {
+    public void sendMessage(View view)
+    {
         // Do something in response to button
         Intent intent = new Intent(this, DisplayMessageActivity.class);
 //        EditText editText = (EditText) findViewById(R.id.editText);
@@ -49,27 +59,31 @@ public class MainActivity extends AppCompatActivity {
         {
             if (resultCode == RESULT_OK)
             {
-                TextView asdf = findViewById(R.id.textView2);
                 String path = resultData.getData().getPath();
-                asdf.setText(path);
 
                 //add to history
-                Set<String> history  = sharedPrefs.getStringSet(getString(R.string.history), new HashSet<String>());
-                if (!history.contains(path))
-                {
-                    history.add(path);
-                }
-
+                Set<String> originalHistroy  = sharedPrefs.getStringSet(getString(R.string.history), new HashSet<String>());
                 SharedPreferences.Editor editor = sharedPrefs.edit();
-
-
+                if (!originalHistroy.contains(path))
+                {
+                    //make a copy of originalHistory
+                    Set<String> newHistory = new HashSet<>(originalHistroy);
+                    newHistory.add(path);
+                    editor.putStringSet(getString(R.string.history), newHistory);
+                }
 
                 editor.apply();
             }
             else
             {
+                Log.d(TAG, "onActivityResult: something went wrong");
                 //cry
             }
         }
+    }
+
+    public void onListItemClick(ListView l, View v, int position, long id)
+    {
+
     }
 }
